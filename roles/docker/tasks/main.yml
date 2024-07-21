@@ -1,0 +1,19 @@
+- name: Include docker source installation task
+  ansible.builtin.include_tasks: 00_install.yml
+
+- name: Check if UFW is installed
+  check_mode: true
+  ansible.builtin.package:
+    name: "ufw"
+    state: "present"
+  register: ufw_check
+
+- name: Check if UFW is enabled
+  check_mode: true
+  community.general.ufw:
+    state: "enabled"
+  register: ufw_enabled_check
+
+- name: Include ufw-docker fix
+  ansible.builtin.include_tasks: 10_ufw-docker.yml
+  when: not ufw_check.changed

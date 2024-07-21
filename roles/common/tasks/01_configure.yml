@@ -1,0 +1,44 @@
+- name: Setup hostname
+  ansible.builtin.hostname:
+    name: "{{ common_hostname }}"
+
+- name: Setup timezone
+  community.general.timezone:
+    name: "{{ common_timezone }}"
+
+- name: Enable NTP (Network Time Protocol)
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    enabled: true
+    state: started
+
+- name: Configure hosts file
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "127.0.0.1 {{ common_hostname }}"
+    state: present
+
+- name: Adjust sysctl.conf
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: "present"
+    reload: true
+  with_dict: "{{ common_sysctl_config }}"
+
+- name: Disable root login
+  ansible.builtin.user:
+    name: root
+    password_lock: true
+
+- name: Ensure the 'wheel' group exists
+  ansible.builtin.group:
+    name: wheel
+    state: present
+
+- name: Add 'wheel' group to sudoers
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    line: "%wheel ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+    insertafter: EOF

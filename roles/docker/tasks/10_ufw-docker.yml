@@ -1,0 +1,7 @@
+- name: Append ufw-docker rules to /etc/ufw/after.rules
+  ansible.builtin.blockinfile:
+    path: "/etc/ufw/after.rules"
+    block: "{{ lookup('file', '{{ role_path }}/templates/ufw-docker.rules.j2') }}"
+    insertbefore: EOF
+  notify:
+    - Restart UFW service

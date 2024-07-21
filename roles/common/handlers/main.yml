@@ -1,0 +1,8 @@
+- name: Reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 120
+
+- name: Mount swap
+  ansible.builtin.command: "swapon {{ common_swapfile_path }}"
+  register: swapon_output
+  changed_when: swapon_output.rc == 0

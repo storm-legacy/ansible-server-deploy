@@ -1,0 +1,23 @@
+common_hostname: "SRV-{{ lookup('community.general.random_string', upper=true, lower=false, special=false, length=8) }}"
+common_packages_base:
+  - "ca-certificates"
+  - "gnupg"
+  - "net-tools"
+  - "lsb-release"
+  - "ufw"
+  - "tmux"
+  - "git"
+  - "curl"
+  - "vim"
+  - "unzip"
+  - "make"
+  - "fail2ban"
+common_packages_ubuntu:
+  - "unattended-upgrades"
+  - "htop"
+common_sysctl_config:
+  "vm.swappiness": "25"
+  "vm.vfs_cache_pressure": "100"
+common_swapfile_size: "{{ ((ansible_memtotal_mb | int / 2) if (ansible_memtotal_mb | int >= 2048) else '2048') }}"
+common_swapfile_path: "/swap.img"
+common_timezone: "Europe/Warsaw"

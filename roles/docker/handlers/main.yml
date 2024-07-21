@@ -1,0 +1,10 @@
+- name: Restart Docker service
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+
+- name: Restart UFW service
+  ansible.builtin.systemd_service:
+    name: "ufw"
+    state: restarted
+  when: not ufw_enabled_check.changed

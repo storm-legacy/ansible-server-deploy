@@ -1,0 +1,5 @@
+- name: General deploy
+  hosts: all
+  roles:
+    - common
+  become: true

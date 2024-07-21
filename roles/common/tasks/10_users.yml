@@ -1,0 +1,37 @@
+- name: Create Ansible user
+  ansible.builtin.user:
+    name: ansible
+    groups: wheel
+    append: true
+    shell: /bin/bash
+    createhome: true
+    password_lock: false
+    password: "{{ vault_srv_ansible_user_pass }}"
+    state: present
+
+- name: Install SSH key for Ansible
+  ansible.posix.authorized_key:
+    user: ansible
+    key: "{{ vault_srv_ansible_user_pubkey }}"
+    state: present
+
+- name: Create administrator accounts
+  ansible.builtin.user:
+    name: "{{ item.key }}"
+    groups: sudo
+    append: true
+    shell: /bin/bash
+    createhome: true
+    password_lock: false
+    password: "{{ item.value }}"
+    state: present
+  with_dict: "{{ vault_srv_admin_users }}"
+  when: (vault_srv_admin_users is defined) and  (vault_srv_admin_users | length > 0)
+
+- name: Install SSH key for specified users
+  ansible.posix.authorized_key:
+    user: "{{ item.key }}"
+    key: "{{ item.value }}"
+    state: present
+  with_dict: "{{ vault_srv_admin_users_pubkeys }}"
+  when: (vault_srv_admin_users_pubkeys is defined) and (vault_srv_admin_users_pubkeys | length > 0)

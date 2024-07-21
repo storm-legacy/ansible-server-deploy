@@ -1,0 +1,11 @@
+- name: Include update task
+  ansible.builtin.include_tasks: 00_update.yml
+
+- name: Include configuration task
+  ansible.builtin.include_tasks: 01_configure.yml
+
+- name: Include user creating task
+  ansible.builtin.include_tasks: 10_users.yml
+
+- name: Include swap creating task
+  ansible.builtin.include_tasks: 50_swap.yml
