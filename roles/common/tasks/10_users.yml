@@ -9,12 +9,6 @@
     password: "{{ vault_srv_ansible_user_pass }}"
     state: present
 
-- name: Install SSH key for Ansible
-  ansible.posix.authorized_key:
-    user: ansible
-    key: "{{ vault_srv_ansible_user_pubkey }}"
-    state: present
-
 - name: Create administrator accounts
   ansible.builtin.user:
     name: "{{ item.key }}"
