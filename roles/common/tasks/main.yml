@@ -4,8 +4,11 @@
 - name: Include configuration task
   ansible.builtin.include_tasks: 01_configure.yml
 
+- name: Include configuration task
+  ansible.builtin.include_tasks: 02_swap.yml
+
 - name: Include user creating task
   ansible.builtin.include_tasks: 10_users.yml
 
-- name: Include swap creating task
-  ansible.builtin.include_tasks: 50_swap.yml
+- name: Include SSH configuration task
+  ansible.builtin.include_tasks: 20_ssh.yml

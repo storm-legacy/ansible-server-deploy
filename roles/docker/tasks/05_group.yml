@@ -4,5 +4,5 @@
     append: true
     groups: "docker"
     state: present
-  with_dict: "{{ vault_srv_admin_users }}"
-  when: (vault_srv_admin_users is defined) and  (vault_srv_admin_users | length > 0)
+  with_dict: "{{ vault_admin_users }}"
+  when: (vault_admin_users is defined) and  (vault_admin_users | length > 0)

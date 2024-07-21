@@ -1,0 +1,52 @@
+- name: Copy SSH configuration override
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/sshd/80-ansible.conf"
+    dest: "/etc/ssh/sshd_config.d/80-ansible.conf"
+    mode: "0640"
+    owner: "root"
+    group: "root"
+  notify:
+    - Restart SSH service
+
+- name: Check for /var/log/auth.log
+  ansible.builtin.stat:
+    path: "/var/log/auth.log"
+  register: auth_log_check
+
+- name: Configure Fail2Ban for SSH ('/var/log/auth.log')
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/fail2ban/sshd.local"
+    dest: "/etc/fail2ban/jail.d/90-sshd.local"
+    mode: "0640"
+    owner: "root"
+    group: "root"
+  notify:
+    - Restart Fail2Ban service
+  when: auth_log_check.stat.exists
+
+- name: Configure Fail2Ban for SSH ('backend=systemd')
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/fail2ban/sshd-systemd.local"
+    dest: "/etc/fail2ban/jail.d/90-sshd.local"
+    mode: "0640"
+    owner: "root"
+    group: "root"
+  notify:
+    - Restart Fail2Ban service
+  when: not auth_log_check.stat.exists
+
+- name: Configure Fail2ban whitelist
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/fail2ban/whitelist.local.j2"
+    dest: "/etc/fail2ban/jail.d/00-whitelist.local"
+    owner: "root"
+    group: "root"
+    mode: "0640"
+  notify:
+    - Restart Fail2Ban service
+  when: (vault_whitelist_ip is defined) and  (vault_whitelist_ip | length > 0)
+
+- name: Start Fail2Ban service
+  ansible.builtin.systemd_service:
+    name: "fail2ban"
+    state: started

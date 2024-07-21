@@ -1,0 +1,26 @@
+- name: Install UFW firewall
+  ansible.builtin.package:
+    name: "ufw"
+    state: present
+
+- name: Reject incoming traffic
+  community.general.ufw:
+    direction: incoming
+    policy: reject
+  notify:
+    - Reload UFW rules
+
+- name: Secure SSH with limit
+  community.general.ufw:
+    rule: limit
+    port: ssh
+    proto: tcp
+    comment: "SSH Limit"
+  notify:
+    - Reload UFW rules
+
+- name: Enable UFW firewall
+  community.general.ufw:
+    state: enabled
+  notify:
+    - Restart UFW service
