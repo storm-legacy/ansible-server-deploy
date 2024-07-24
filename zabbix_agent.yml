@@ -1,7 +1,5 @@
-- name: General deploy
+- name: Install Zabbix Agent
   hosts: all
   roles:
-    - common
-    - ufw
     - zabbix_agent
   become: true

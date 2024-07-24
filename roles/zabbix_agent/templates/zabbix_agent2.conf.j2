@@ -1,0 +1,66 @@
+## General
+PidFile=/var/run/zabbix/zabbix_agent2.pid
+LogType=file
+LogFile=/var/log/zabbix/zabbix_agent2.log
+LogFileSize=0
+
+DebugLevel=2
+#SourceIP=
+Hostname={{ zabbix_agent_hostname }}
+
+## Passive checks
+# Server IP
+Server={{ zabbix_agent_server_ip }}
+ListenPort=10050
+ListenIP=0.0.0.0
+#StatusPort=
+TLSAccept=psk
+
+## Active checks
+ServerActive={{ zabbix_agent_server_ip }}:10051
+TLSConnect=psk
+#HostnameItem=system.hostname
+RefreshActiveChecks=600
+#BufferSend=5
+#BufferSize=100
+#EnablePersistentBuffer=0
+#PersistentBufferFile=
+PersistentBufferPeriod=1h
+ForceActiveChecksOnStart=1
+
+## Autoregistration
+#HostMetadata=
+#HostMetadataItem=
+#HostInterface=
+#HostInterfaceItem=
+
+## Advanced
+#Alias=zabbix.userid:vfs.file.regexp[/etc/passwd,^zabbix:.:([0-9]+),,,,\1]
+Timeout=10
+ControlSocket=/run/zabbix/agent.sock
+#AllowKey=
+#DenyKey=system.run[*]
+#UnsafeUserParameters=0
+#UserParameter=
+#UserParameterDir=
+
+## TLS
+# TLSCAFile=
+# TLSCRLFile=
+# TLSServerCertIssuer=
+# TLSServerCertSubject=
+# TLSCertFile=
+# TLSKeyFile=
+
+## PSK
+TLSPSKIdentity=PSK{{ zabbix_agent_psk_key_name }}
+TLSPSKFile=/etc/zabbix/zabbix_agent_psk.key
+
+## Plugins
+#PluginTimeout=
+#PluginSocket=
+Plugins.SystemRun.LogRemoteCommands=1
+#Plugins.Log.MaxLinesPerSecond=20
+
+## Include other configuration
+Include=./zabbix_agent2.d/plugins.d/*.conf

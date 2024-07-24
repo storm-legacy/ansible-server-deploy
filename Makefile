@@ -10,7 +10,7 @@ install:
 	pip install -r requirements.txt
 
 dev:
-	ansible-playbook $(TARGET_PLAYBOOK) \
+	ansible-playbook playbooks/$(TARGET_PLAYBOOK) \
 		-J \
 		-i $(TARGET_SERVER_IP), \
 		-e @vault.yml \

@@ -1,0 +1,70 @@
+- name: Download Zabbix package
+  ansible.builtin.get_url:
+    url: "{{ zabbix_agent_ubuntu_repo_url }}"
+    dest: "/tmp/zabbix_release.deb"
+    mode: '0600'
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install Zabbix package
+  ansible.builtin.apt:
+    deb: "/tmp/zabbix_release.deb"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Update APT sources
+  ansible.builtin.apt:
+    update_cache: true
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install Zabbix Agent 2
+  ansible.builtin.package:
+    name:
+      - "zabbix-agent2"
+      - "zabbix-agent2-plugin-*"
+    state: present
+
+- name: Install Zabbix Agent 2 configuration
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/zabbix_agent2.conf.j2"
+    dest: "/etc/zabbix/zabbix_agent2.conf"
+    backup: true
+    mode: '0640'
+    owner: 'root'
+    group: 'zabbix'
+    force: false
+  notify:
+    - Restart Zabbix Agent 2
+
+- name: Check if UFW is installed
+  check_mode: true
+  ansible.builtin.package:
+    name: "ufw"
+    state: "present"
+  register: ufw_check
+
+- name: Allow connection from Zabbix Server (UFW)
+  community.general.ufw:
+    rule: allow
+    from_ip: "{{ zabbix_agent_server_ip }}"
+    to_port: "10050"
+    proto: "tcp"
+    comment: "Zabbix Server (Passive)"
+  when: not ufw_check.changed
+
+# TODO: FirewallD
+
+- name: Install PSK key for Zabbix Agent 2
+  ansible.builtin.copy:
+    content: "{{ zabbix_agent_psk_key }}"
+    dest: "/etc/zabbix/zabbix_agent_psk.key"
+    mode: '0600'
+    owner: "zabbix"
+    group: "zabbix"
+    force: false
+  notify:
+    - Restart Zabbix Agent 2
+
+- name: Enable Zabbix Agent 2
+  ansible.builtin.systemd:
+    name: "zabbix-agent2"
+    enabled: true
+    state: started
