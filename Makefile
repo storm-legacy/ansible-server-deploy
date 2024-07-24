@@ -1,16 +1,28 @@
+-include .env.example
 -include .env
 
-venv:
-	/usr/bin/python -m venv .venv
+PYTHON := python3
+VENV := .venv
+BIN := $(VENV)/bin
 
-activate:
-	. ./.venv/bin/activate
+ifeq ($(OS), Windows_NT)
+  BIN = $(VENV)/Scripts
+  PYTHON = python
+endif
+
+init: venv install
+	$(PYTHON) ./console.py copy -s ".env.example" -d ".env"
+	$(PYTHON) ./console.py copy -s "vault.example.yml" -d "vault.yml"
+	$(BIN)/ansible-vault encrypt "vault.yml"
+
+venv:
+	$(PYTHON) -m venv $(VENV)
 
 install:
-	pip install -r requirements.txt
+	$(BIN)/$(PYTHON) -m pip install -r requirements.txt
 
 dev:
-	ansible-playbook playbooks/$(TARGET_PLAYBOOK) \
+	$(BIN)/ansible-playbook $(TARGET_PLAYBOOK) \
 		-J \
 		-i $(TARGET_SERVER_IP), \
 		-e @vault.yml \
