@@ -1,19 +1,28 @@
+- name: Check if Zabbix Agent 2 is installed
+  check_mode: true
+  ansible.builtin.package:
+    name:
+      - "zabbix-agent2"
+  register: zabbix_agent2_status
+
 - name: Download Zabbix package
   ansible.builtin.get_url:
     url: "{{ zabbix_agent_ubuntu_repo_url }}"
     dest: "/tmp/zabbix_release.deb"
     mode: '0600'
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_distribution == 'Ubuntu' and zabbix_agent2_status.changed
 
 - name: Install Zabbix package
   ansible.builtin.apt:
     deb: "/tmp/zabbix_release.deb"
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_distribution == 'Ubuntu' and zabbix_agent2_status.changed
+
 
 - name: Update APT sources
   ansible.builtin.apt:
     update_cache: true
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_distribution == 'Ubuntu' and zabbix_agent2_status.changed
+
 
 - name: Install Zabbix Agent 2
   ansible.builtin.package:
@@ -21,6 +30,8 @@
       - "zabbix-agent2"
       - "zabbix-agent2-plugin-*"
     state: present
+  notify:
+    - Restart Zabbix Agent 2
 
 - name: Install Zabbix Agent 2 configuration
   ansible.builtin.template:
