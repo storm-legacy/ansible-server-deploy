@@ -27,3 +27,10 @@ dev:
 		-i $(TARGET_SERVER_IP), \
 		-e @vault.yml \
 		-e "ansible_ssh_user=$(TARGET_SSH_USER) ansible_ssh_pass=$(TARGET_SSH_PASS) ansible_become_pass=$(TARGET_SSH_PASS)"
+
+dev2:
+	$(BIN)/ansible-playbook $(TARGET_PLAYBOOK) \
+		-J \
+		-i $(TARGET_SERVER_IP), \
+		-e @vault.yml \
+		-e "ansible_ssh_user=$(TARGET_SSH_USER) ansible_become_pass=$(TARGET_SSH_PASS)"

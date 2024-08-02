@@ -12,6 +12,7 @@ common_packages_base:
   - "unzip"
   - "make"
   - "fail2ban"
+  - "lynis"
 common_packages_ubuntu:
   - "unattended-upgrades"
   - "htop"

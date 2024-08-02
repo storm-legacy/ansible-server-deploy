@@ -1,0 +1,11 @@
+- name: Upgrade system packages
+  hosts: all
+  max_fail_percentage: 10
+  become: true
+  serial:
+    - 10%
+    - 30%
+    - 60%
+    - 100%
+  roles:
+    - maintenance

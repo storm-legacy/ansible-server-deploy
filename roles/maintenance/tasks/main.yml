@@ -1,0 +1,19 @@
+# Credits to:
+# https://aaronsaray.com/2021/ansible-reboot-if-required/
+
+- name: Install updates (Debian)
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+    upgrade: safe
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Check if reboot required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required_file
+
+- name: Reboot if required
+  ansible.builtin.reboot:
+    reboot_timeout: 120
+  when: reboot_required_file.stat.exists
