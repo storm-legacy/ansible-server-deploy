@@ -1,8 +1,11 @@
-- name: Setup hostname
+- name: Setting new hostname - {{ new_hostname }}
   ansible.builtin.hostname:
-    name: "{{ common_hostname }}"
+    name: "{{ new_hostname }}"
+  vars:
+    raw_ip: "{{ ansible_default_ipv4.address }}"
+    new_hostname: "{{ raw_ip | replace('.', '-') }}"
 
-- name: Setup timezone
+- name: Setup timezone - {{ common_timezone }}
   community.general.timezone:
     name: "{{ common_timezone }}"
 
@@ -15,7 +18,7 @@
 - name: Configure hosts file
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    line: "127.0.0.1 {{ common_hostname }}"
+    line: "127.0.0.1 {{ ansible_hostname }}"
     state: present
 
 - name: Adjust sysctl.conf

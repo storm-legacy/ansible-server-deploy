@@ -12,3 +12,9 @@
 
 - name: Include SSH configuration task
   ansible.builtin.include_tasks: 20_ssh.yml
+
+- name: Include KnockD configuration taks
+  ansible.builtin.include_tasks: 25_knockd.yml
+
+- name: Include UFW configuration taks
+  ansible.builtin.include_tasks: 30_ufw.yml

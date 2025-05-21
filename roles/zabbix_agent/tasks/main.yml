@@ -1,30 +1,21 @@
-- name: Check if Zabbix Agent 2 is installed
-  check_mode: true
-  ansible.builtin.package:
-    name:
-      - "zabbix-agent2"
-  register: zabbix_agent2_status
-
 - name: Download Zabbix package
   ansible.builtin.get_url:
     url: "{{ zabbix_agent_ubuntu_repo_url }}"
     dest: "/tmp/zabbix_release.deb"
-    mode: '0600'
-  when: ansible_distribution == 'Ubuntu' and zabbix_agent2_status.changed
+    mode: "0600"
+  when: ansible_distribution in ['Ubuntu']
 
 - name: Install Zabbix package
   ansible.builtin.apt:
     deb: "/tmp/zabbix_release.deb"
-  when: ansible_distribution == 'Ubuntu' and zabbix_agent2_status.changed
-
+  when: ansible_distribution in ['Ubuntu']
 
 - name: Update APT sources
   ansible.builtin.apt:
     update_cache: true
-  when: ansible_distribution == 'Ubuntu' and zabbix_agent2_status.changed
+  when: ansible_distribution in ['Ubuntu']
 
-
-- name: Install Zabbix Agent 2
+- name: Ensure Zabbix Agent 2
   ansible.builtin.package:
     name:
       - "zabbix-agent2"
@@ -33,15 +24,21 @@
   notify:
     - Restart Zabbix Agent 2
 
-- name: Install Zabbix Agent 2 configuration
+- name: Deploy Zabbix Agent 2 configuration from template
   ansible.builtin.template:
     src: "{{ role_path }}/templates/zabbix_agent2.conf.j2"
     dest: "/etc/zabbix/zabbix_agent2.conf"
     backup: true
-    mode: '0640'
-    owner: 'root'
-    group: 'zabbix'
-    force: false
+    mode: "0640"
+    owner: "root"
+    group: "zabbix"
+    force: true
+  with_items:
+    - {
+        hostname: "{{ zabbix_agent_hostname }}",
+        server_ip: "{{ zabbix_agent_server_ip }}",
+        psk_name: "{{ zabbix_agent_psk_key_name }}",
+      }
   notify:
     - Restart Zabbix Agent 2
 
@@ -61,13 +58,11 @@
     comment: "Zabbix Server (Passive)"
   when: not ufw_check.changed
 
-# TODO: FirewallD
-
 - name: Install PSK key for Zabbix Agent 2
   ansible.builtin.copy:
     content: "{{ zabbix_agent_psk_key }}"
     dest: "/etc/zabbix/zabbix_agent_psk.key"
-    mode: '0600'
+    mode: "0600"
     owner: "zabbix"
     group: "zabbix"
     force: false

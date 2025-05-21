@@ -1,0 +1,11 @@
+[options]
+#  UseSyslog
+  logfile = /var/log/knockd.log
+
+[openCloseSSH]
+  sequence      = {{ item.ssh_knock_seq }}
+  seq_timeout   = 5
+  tcpflags      = syn
+  start_command = /sbin/iptables -A INPUT -s %IP% -p tcp --dport {{ item.ssh_port }} -j ACCEPT
+  stop_command  = /sbin/iptables -D INPUT -s %IP% -p tcp --dport {{ item.ssh_port }} -j ACCEPT
+  cmd_timeout   = 30

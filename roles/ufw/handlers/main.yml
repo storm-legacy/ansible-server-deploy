@@ -1,8 +1,0 @@
-- name: Restart UFW service
-  ansible.builtin.systemd_service:
-    name: "ufw"
-    state: restarted
-
-- name: Reload UFW rules
-  community.general.ufw:
-    state: reloaded

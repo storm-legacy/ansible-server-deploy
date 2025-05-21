@@ -1,4 +1,4 @@
-common_hostname: "SRV-{{ lookup('community.general.random_string', upper=true, lower=false, special=false, length=8) }}"
+common_hostname: "srv-{{ lookup('community.general.random_string', upper=false, lower=true, special=false, length=8) }}"
 common_packages_base:
   - "ca-certificates"
   - "gnupg"
@@ -16,9 +16,26 @@ common_packages_base:
 common_packages_ubuntu:
   - "unattended-upgrades"
   - "htop"
+
 common_sysctl_config:
   "vm.swappiness": "25"
   "vm.vfs_cache_pressure": "100"
+
 common_swapfile_size: "{{ ((ansible_memtotal_mb | int / 2) if (ansible_memtotal_mb | int >= 2048) else '2048') }}"
 common_swapfile_path: "/swap.img"
+
 common_timezone: "Europe/Warsaw"
+
+common_ssh_port: 8822
+
+common_whitelist_ips: "{{ vault_whitelist_ips }}"
+
+common_new_users: "{{ vault_new_users }}"
+common_all_groups: >-
+  {{ common_new_users
+    | map(attribute='groups')
+    | map('split', ',')
+    | list
+    | flatten
+    | unique
+  }}

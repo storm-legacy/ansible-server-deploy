@@ -1,7 +1,0 @@
-- name: General deploy
-  hosts: all
-  roles:
-    - common
-    - ufw
-    - zabbix_agent
-  become: true

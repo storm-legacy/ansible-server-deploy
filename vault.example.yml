@@ -1,20 +1,27 @@
-# Generated via python passlib (https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module)
-vault_srv_ansible_user_pass: "$6$1g9FpoXaYZvaAFNU$xGUT2YzUwKjniiLitYmi0k/kYaqL.AU2.hqusgPnljF7A0Rz6Cmk/ZyFqXcZO0N4wyB2IL7Ob0Mqm1cwkJ7JB."
+# Users and their parameters
+# How to generate password hash:
+# https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module
+# Empty passwords will be randomly generated
 
-# Additional users and their passwords in hashed form
-vault_srv_admin_users:
-  "adminuser": "$6$1g9FpoXaYZvaAFNU$xGUT2YzUwKjniiLitYmi0k/kYaqL.AU2.hqusgPnljF7A0Rz6Cmk/ZyFqXcZO0N4wyB2IL7Ob0Mqm1cwkJ7JB."
-  "anotheradmin": "$6$1g9FpoXaYZvaAFNU$xGUT2YzUwKjniiLitYmi0k/kYaqL.AU2.hqusgPnljF7A0Rz6Cmk/ZyFqXcZO0N4wyB2IL7Ob0Mqm1cwkJ7JB."
+vault_new_users:
+  - name: "user"
+    pass_hash: "$6$H7b44oCN.FQMovtf$6r2LmIMpDYHVTjPFl3LFmswXJyIsSTekmUUjG67E7vHrb6Co5YFZqCync/eS3CTCgd9NRox.HeEtmrA0YZNJf/"
+    groups: ""
+    ssh_key: ""
+  - name: "user2"
+    pass_hash: ""
+    groups: "sudo,adm,lp"
+    ssh_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk9hZ5dT9b2KqzL+6j5pQzV4y4JtG8Pe5X3qOyZQvJ user@example.com"
+  - name: "user3"
+    pass_hash: "$6$bC0pHvZWq0k7fpBT$uKX47OdwfLhyuFS2hBGMjxeHghM5V5bzOICxkglV.Q79YKPHcvmQNKLvJv.5aeUW5ran36h7z00nygPNxVFlT/"
+    groups: "wheel"
+    ssh_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFb8QX2cK7l1RypxR2qg4oVt2eU6yF3Vg9TzJkP5LJn example@host"
 
-# Additional public keys to install
-vault_srv_admin_users_pubkeys:
-  "ansible": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB+SxknXVPf7Zt/A/oif7A2oA5kgnqyuvClIJ9qg82bQ nope"
-  "adminuser": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB+SxknXVPf7Zt/A/oif7A2oA5kgnqyuvClIJ9qg82bQ nope"
-
-# Specify IP that shouldn't be banned
-vault_srv_whitelist_ip:
-  - "45.45.45.45"
+# General whitelist IPs
+vault_whitelist_ips:
+  - "127.0.0.1"
+  - "10.0.0.1"
 
 # Zabbix configuration
-zabbix_agent_server_ip: "1.2.3.4"
-zabbix_agent_version: "6.0"
+vault_zabbix_agent_server_ip: "123.123.123.123"
+vault_zabbix_agent_version: "7.0"

@@ -1,31 +1,99 @@
-- name: Create Ansible user
-  ansible.builtin.user:
-    name: ansible
-    groups: wheel
-    append: true
-    shell: /bin/bash
-    createhome: true
-    password_lock: false
-    password: "{{ vault_srv_ansible_user_pass }}"
-    state: present
+- name: Add existing SHA-512 hashes to user_passwords
+  ansible.builtin.set_fact:
+    user_passwords: >-
+      {{
+        (user_passwords | default({}))
+        | combine({ item.name: item.pass_hash })
+      }}
+  when: item.pass_hash is defined and (item.pass_hash | length) > 0
+  loop: "{{ common_new_users }}"
+  loop_control:
+    label: "{{ item.name }}"
 
-- name: Create administrator accounts
-  ansible.builtin.user:
-    name: "{{ item.key }}"
-    groups: sudo
-    append: true
-    shell: /bin/bash
-    createhome: true
-    password_lock: false
-    password: "{{ item.value }}"
-    state: present
-  with_dict: "{{ vault_admin_users }}"
-  when: (vault_admin_users is defined) and  (vault_admin_users | length > 0)
+- name: Create passwords for users lacking a pass_hash
+  ansible.builtin.set_fact:
+    plaintext_passwords: >-
+      {{
+        (plaintext_passwords | default({}))
+        | combine({
+            item.name:
+              lookup('community.general.random_string', upper=true, lower=true, special=false, length=24)
+          })
+      }}
+  when: item.pass_hash is not defined or (item.pass_hash | length) == 0
+  loop: "{{ common_new_users }}"
+  loop_control:
+    label: "{{ item.name }}"
 
-- name: Install SSH key for specified users
-  ansible.posix.authorized_key:
-    user: "{{ item.key }}"
-    key: "{{ item.value }}"
+- name: Hash plaintext passwords and add to user_passwords
+  ansible.builtin.set_fact:
+    user_passwords: >-
+      {{
+        (user_passwords | default({}))
+        | combine({ item.key: item.value | password_hash('sha512') })
+      }}
+  loop: "{{ plaintext_passwords | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Print user generated user passwords
+  ansible.builtin.debug:
+    var: plaintext_passwords
+
+- name: Hash plaintext passwords to SHA-512
+  set_fact:
+    user_passwords: >-
+      {{
+        (user_passwords | default({}))
+        | combine({
+            item.key: item.value | password_hash('sha512')
+          })
+      }}
+  loop: "{{ plaintext_passwords | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Print hashed user passwords
+  debug:
+    var: user_passwords
+
+- name: Ensure each group exists
+  ansible.builtin.group:
+    name: "{{ item }}"
     state: present
-  with_dict: "{{ vault_admin_users_pubkeys }}"
-  when: (vault_admin_users_pubkeys is defined) and (vault_admin_users_pubkeys | length > 0)
+  loop: "{{ common_all_groups }}"
+
+- name: Create or update user accounts
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    shell: /bin/bash
+    groups: "{{ item.groups.split(',') }}"
+    append: true
+    state: present
+    update_password: on_create
+    password: "{{ user_passwords[item.name] }}"
+  loop: "{{ common_new_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Add each user’s SSH key
+  ansible.builtin.authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.ssh_key }}"
+    state: present
+  when: item.ssh_key is defined and (item.ssh_key | length) > 0
+  loop: "{{ common_new_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Ensure .ssh directory exists for users
+  file:
+    path: "/home/{{ item.name }}/.ssh"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: "0750"
+  when: item.ssh_keygen | default(false)
+  loop: "{{ common_new_users }}"
+  loop_control:
+    label: "{{ item.name }}"

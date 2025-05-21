@@ -1,0 +1,45 @@
+- name: Install knockd package
+  ansible.builtin.package:
+    name: knockd
+    state: present
+
+- name: Generate knock_seq for knockd
+  set_fact:
+    knock_seq: "{{ (range(10000, 12000) | list | shuffle)[:4] | join(',') }}"
+
+- name: Deploy knockd configuration from template
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/knockd.conf.j2"
+    dest: "/etc/knockd.conf"
+    owner: root
+    group: root
+    mode: "0640"
+    force: false
+  with_items:
+    - { ssh_port: "{{ common_ssh_port }}", ssh_knock_seq: "{{ knock_seq }}" }
+  notify:
+    - Restart KnockD service
+
+- name: Detect primary (default IPv4) interface name
+  ansible.builtin.set_fact:
+    public_interface: "{{ ansible_default_ipv4.interface }}"
+
+- name: Show me the interface name
+  ansible.builtin.debug:
+    msg: "Primary interface on {{ inventory_hostname }} is {{ public_interface }}"
+
+- name: Ensure knockd default interface is configured
+  ansible.builtin.lineinfile:
+    path: /etc/default/knockd
+    regexp: "^KNOCKD_OPTS="
+    line: 'KNOCKD_OPTS="-i {{ public_interface }}"'
+    insertafter: EOF
+    create: false
+  notify:
+    - Restart KnockD service
+
+- name: Ensure knockd service is enabled and running
+  ansible.builtin.service:
+    name: knockd
+    state: started
+    enabled: true

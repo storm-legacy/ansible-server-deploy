@@ -1,7 +1,0 @@
-- name: Docker server deploy
-  hosts: all
-  roles:
-    - common
-    - ufw
-    - docker
-  become: true

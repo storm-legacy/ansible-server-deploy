@@ -1,14 +1,13 @@
-Protocol 2
-DebianBanner no
+Port {{ common_ssh_port }}
 
+DebianBanner no
 X11Forwarding no
 
 MaxAuthTries 3
 LoginGraceTime 30
+ClientAliveCountMax 3
 
-ClientAliveCountMax 2
 ClientAliveInterval 300
-
 ChallengeResponseAuthentication no
 KerberosAuthentication no
 GSSAPIAuthentication no

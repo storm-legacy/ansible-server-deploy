@@ -3,19 +3,21 @@
     name: "ufw"
     state: present
 
-- name: Reject incoming traffic
+- name: Deny incoming traffic
   community.general.ufw:
     direction: incoming
-    policy: reject
+    policy: deny
   notify:
     - Reload UFW rules
 
-- name: Secure SSH with limit
+- name: Allow SSH (:{{ common_ssh_port }}) connection from whitelisted IPs
   community.general.ufw:
-    rule: limit
-    port: ssh
+    rule: allow
+    port: "{{ common_ssh_port }}"
     proto: tcp
-    comment: "SSH Limit"
+    from_ip: "{{ item }}"
+    comment: "SSH:{{ item }}"
+  loop: "{{ common_whitelist_ips }}"
   notify:
     - Reload UFW rules
 

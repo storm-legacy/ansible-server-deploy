@@ -2,17 +2,26 @@
   ansible.builtin.reboot:
     reboot_timeout: 120
 
-- name: Mount swap
-  ansible.builtin.command: "swapon {{ common_swapfile_path }}"
-  register: swapon_output
-  changed_when: swapon_output.rc == 0
-
-- name: Restart Fail2Ban service
-  ansible.builtin.systemd_service:
-    name: "fail2ban"
-    state: restarted
+# - name: Mount swap
+#   ansible.builtin.command: "swapon {{ common_swapfile_path }}"
+#   register: swapon_output
+#   changed_when: swapon_output.rc == 0
 
 - name: Restart SSH service
   ansible.builtin.systemd_service:
     name: "ssh"
     state: restarted
+
+- name: Restart KnockD service
+  ansible.builtin.systemd_service:
+    name: "knockd"
+    state: restarted
+
+- name: Restart UFW service
+  ansible.builtin.systemd_service:
+    name: "ufw"
+    state: restarted
+
+- name: Reload UFW rules
+  community.general.ufw:
+    state: reloaded

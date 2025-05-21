@@ -3,3 +3,4 @@
 .env
 .env.bak
 vault.yml
+/output/**/*

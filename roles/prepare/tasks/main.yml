@@ -1,0 +1,14 @@
+- name: Check for python3-venv package
+  ansible.builtin.apt:
+    name: "python3-venv"
+    state: present
+    update_cache: true
+  when: ansible_distribution in ['Debian', 'Ubuntu']
+
+- name: Create virtualenv for Ansible
+  ansible.builtin.pip:
+    name: "{{ item }}"
+    virtualenv: "{{ prepare_venv_path }}"
+    virtualenv_command: "python3 -m venv"
+  loop:
+    - ansible
