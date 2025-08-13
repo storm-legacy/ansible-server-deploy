@@ -1,4 +1,6 @@
-common_hostname: "srv-{{ lookup('community.general.random_string', upper=false, lower=true, special=false, length=8) }}"
+---
+common_hostname: "{{ ansible_facts['ansible_eth0']['ipv4']['address'] | replace('.', '-') }}"
+
 common_packages_base:
   - "ca-certificates"
   - "gnupg"
@@ -11,31 +13,46 @@ common_packages_base:
   - "vim"
   - "unzip"
   - "make"
-  - "fail2ban"
-  - "lynis"
+  # - "fail2ban"
+  # - "lynis"
+
 common_packages_ubuntu:
   - "unattended-upgrades"
   - "htop"
 
+common_services_disabled:
+  - bluetooth
+  - modemmanager
+  - cups
+  - cups-browsed
+  - apport
+  - whoopsie
+  - lxd
+  - lxcfs
+  - rpcbind
+  - avahi-daemon
+  - avahi-dnsconfd
+
 common_sysctl_config:
+  # disable IPv6
+  "net.ipv6.conf.all.disable_ipv6": "1"
+  "net.ipv6.conf.lo.disable_ipv6": "1"
+  "net.ipv6.conf.default.disable_ipv6": "1"
+
+# SWAP
+common_swapfile_size: "{{ ((ansible_memtotal_mb | int / 2) if (ansible_memtotal_mb | int >= 2048) else '2048') }}"
+common_swapfile_path: "/swap.img"
+common_swap_sysctl_config:
   "vm.swappiness": "25"
   "vm.vfs_cache_pressure": "100"
 
-common_swapfile_size: "{{ ((ansible_memtotal_mb | int / 2) if (ansible_memtotal_mb | int >= 2048) else '2048') }}"
-common_swapfile_path: "/swap.img"
-
+# Datetime
 common_timezone: "Europe/Warsaw"
 
-common_ssh_port: 8822
-
+# SSH
+common_ssh_port: "{{ vault_ssh_port }}"
+common_ssh_knock_seq: "{{ vault_ssh_knock_seq | map('string') | join(',') }}"
 common_whitelist_ips: "{{ vault_whitelist_ips }}"
 
+# Users
 common_new_users: "{{ vault_new_users }}"
-common_all_groups: >-
-  {{ common_new_users
-    | map(attribute='groups')
-    | map('split', ',')
-    | list
-    | flatten
-    | unique
-  }}

@@ -6,17 +6,25 @@
 #     var: ansible_facts.swaptotal_mb
 
 - name: Swap already configured – skipping swapfile setup
-  debug:
+  ansible.builtin.debug:
     msg: "Swap is already active on {{ inventory_hostname }} ({{ ansible_facts.swaptotal_mb }} MB), nothing to do."
   when: ansible_facts.swaptotal_mb > 0
 
 - name: Setup swapfile
   when: ansible_facts.swaptotal_mb == 0
   block:
-    - name: Check if swapfile exists
+    - name: Adjust swappiness and vfs_cache_pressure
+      ansible.posix.sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        state: "present"
+        reload: true
+      with_dict: "{{ common_swap_sysctl_config }}"
+
+    - name: Check if swap file already exists
       ansible.builtin.stat:
         path: "{{ common_swapfile_path }}"
-      register: swap_info
+      register: common_swap_info
       ignore_errors: true
 
     - name: Create swapfile if it doesn't exist
@@ -26,7 +34,7 @@
         mode: "0600"
         owner: "root"
         group: "root"
-      when: not swap_info.stat.exists
+      when: not common_swap_info.stat.exists
 
     - name: Initialize swapfile
       community.general.filesystem:
@@ -44,3 +52,15 @@
         passno: "0"
         state: "present"
         backup: true
+
+    - name: Check active swaps
+      ansible.builtin.command: swapon --show=NAME --noheadings
+      register: common_active_swaps
+      changed_when: false
+
+    - name: Enable swap immediately (only if not active)
+      become: true
+      ansible.builtin.command:
+        argv: ["swapon", "{{ common_swapfile_path }}"]
+      when: common_swapfile_path not in (common_active_swaps.stdout_lines | default([]))
+      changed_when: true

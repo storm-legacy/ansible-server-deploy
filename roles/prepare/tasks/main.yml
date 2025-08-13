@@ -12,3 +12,30 @@
     virtualenv_command: "python3 -m venv"
   loop:
     - ansible
+
+- name: Ensure the 'wheel' group exists
+  ansible.builtin.group:
+    name: wheel
+    state: present
+
+- name: Add 'wheel' group to sudoers
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    line: "%wheel ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+    insertafter: EOF
+
+- name: Create ansible user with no password login
+  ansible.builtin.user:
+    name: ansible
+    groups: wheel
+    append: true
+    shell: /bin/bash
+    create_home: true
+    password_lock: true
+
+- name: Add SSH public key for ansible user
+  ansible.posix.authorized_key:
+    user: ansible
+    state: present
+    key: "{{ prepare_ansible_ssh_pubkey }}"

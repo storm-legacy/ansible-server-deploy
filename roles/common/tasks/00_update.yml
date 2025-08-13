@@ -5,8 +5,6 @@
     update_cache: true
     force_apt_get: true
     cache_valid_time: 86400
-  notify:
-    - Reboot
   when: ansible_distribution in ['Debian', 'Ubuntu']
 
 - name: Install packages

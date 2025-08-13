@@ -1,3 +1,4 @@
+---
 - name: Deploy SSH configuration from template
   ansible.builtin.template:
     src: "{{ role_path }}/templates/sshd_override.conf.j2"

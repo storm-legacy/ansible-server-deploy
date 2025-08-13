@@ -1,0 +1,16 @@
+[project]
+name = "ansible-server-deploy"
+version = "0.3.0"
+description = "deployment package for the servers"
+package-mode = false
+
+requires-python = ">=3.12"
+
+dependencies = [
+    "ansible>=3.4.0",
+]
+
+[dependency-groups]
+dev = [
+    "ansible-lint>=25.7.0",
+]

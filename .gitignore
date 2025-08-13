@@ -1,6 +1,12 @@
 .venv
 .vscode
+.ansible
+
 .env
 .env.bak
-vault.yml
+
 /output/**/*
+
+.vault_pass*
+*.vault_pass*
+vault.yml

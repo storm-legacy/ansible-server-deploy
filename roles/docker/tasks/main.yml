@@ -35,13 +35,14 @@
   notify:
     - Restart Docker service
 
-- name: Add docker permissions
+# TODO: Fix adding users to docker group
+- name: Add users to docker group
   ansible.builtin.user:
     name: "{{ item.key }}"
     append: true
     groups: "docker"
     state: present
-  with_dict: "{{ vault_admin_users }}"
+  loop: "{{ vault_admin_users }}"
   when: (vault_admin_users is defined) and  (vault_admin_users | length > 0)
 
 - name: Check if UFW is installed

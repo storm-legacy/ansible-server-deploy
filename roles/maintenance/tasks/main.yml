@@ -1,7 +1,7 @@
 # Credits to:
 # https://aaronsaray.com/2021/ansible-reboot-if-required/
 
-- name: Install updates (Debian)
+- name: Install updates (Debian/Ubuntu)
   ansible.builtin.apt:
     update_cache: true
     cache_valid_time: 3600

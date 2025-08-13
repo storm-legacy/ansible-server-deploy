@@ -29,19 +29,23 @@
     reload: true
   with_dict: "{{ common_sysctl_config }}"
 
-- name: Disable root login
+- name: Disable root password
   ansible.builtin.user:
     name: root
     password_lock: true
 
-- name: Ensure the 'wheel' group exists
-  ansible.builtin.group:
-    name: wheel
-    state: present
+- name: Copy weekly reboot script to the server
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/usr/local/bin/weekly_reboot.sh"
+    dest: "/usr/local/bin/weekly_reboot.sh"
+    owner: "root"
+    group: "root"
+    mode: "0750"
 
-- name: Add 'wheel' group to sudoers
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers
-    line: "%wheel ALL=(ALL) NOPASSWD: ALL"
-    validate: "visudo -cf %s"
-    insertafter: EOF
+- name: Copy weekly reboot cronjob to the server
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/etc/cron.d/weekly_reboot"
+    dest: "/etc/cron.d/weekly_reboot"
+    owner: "root"
+    group: "root"
+    mode: "0750"

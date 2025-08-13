@@ -1,99 +1,45 @@
-- name: Add existing SHA-512 hashes to user_passwords
+---
+- name: Gather unique groups from vault data
   ansible.builtin.set_fact:
-    user_passwords: >-
-      {{
-        (user_passwords | default({}))
-        | combine({ item.name: item.pass_hash })
-      }}
-  when: item.pass_hash is defined and (item.pass_hash | length) > 0
-  loop: "{{ common_new_users }}"
-  loop_control:
-    label: "{{ item.name }}"
+    common_user_groups_list: >-
+      {{ common_new_users
+        | map(attribute='groups')
+        | join(',')
+        | regex_replace('\s+', '')
+        | split(',')
+        | reject('equalto', '')
+        | unique
+        | list }}
 
-- name: Create passwords for users lacking a pass_hash
-  ansible.builtin.set_fact:
-    plaintext_passwords: >-
-      {{
-        (plaintext_passwords | default({}))
-        | combine({
-            item.name:
-              lookup('community.general.random_string', upper=true, lower=true, special=false, length=24)
-          })
-      }}
-  when: item.pass_hash is not defined or (item.pass_hash | length) == 0
-  loop: "{{ common_new_users }}"
-  loop_control:
-    label: "{{ item.name }}"
-
-- name: Hash plaintext passwords and add to user_passwords
-  ansible.builtin.set_fact:
-    user_passwords: >-
-      {{
-        (user_passwords | default({}))
-        | combine({ item.key: item.value | password_hash('sha512') })
-      }}
-  loop: "{{ plaintext_passwords | dict2items }}"
-  loop_control:
-    label: "{{ item.key }}"
-
-- name: Print user generated user passwords
-  ansible.builtin.debug:
-    var: plaintext_passwords
-
-- name: Hash plaintext passwords to SHA-512
-  set_fact:
-    user_passwords: >-
-      {{
-        (user_passwords | default({}))
-        | combine({
-            item.key: item.value | password_hash('sha512')
-          })
-      }}
-  loop: "{{ plaintext_passwords | dict2items }}"
-  loop_control:
-    label: "{{ item.key }}"
-
-- name: Print hashed user passwords
-  debug:
-    var: user_passwords
-
-- name: Ensure each group exists
+- name: Ensure groups exist
   ansible.builtin.group:
     name: "{{ item }}"
     state: present
-  loop: "{{ common_all_groups }}"
+  loop: "{{ common_user_groups_list }}"
+  when: common_user_groups_list | length > 0
 
-- name: Create or update user accounts
+- name: Ensure user exists
   ansible.builtin.user:
     name: "{{ item.name }}"
+    create_home: true
     shell: /bin/bash
-    groups: "{{ item.groups.split(',') }}"
+    password: "{{ item.pass_hash if item.pass_hash | length > 0 else omit }}"
+    password_lock: "{{ true if (item.pass_hash | length) == 0 else omit }}"
+    groups: "{{ item.groups }}"
     append: true
     state: present
     update_password: on_create
-    password: "{{ user_passwords[item.name] }}"
   loop: "{{ common_new_users }}"
   loop_control:
     label: "{{ item.name }}"
+  # no_log: true
 
-- name: Add each user’s SSH key
-  ansible.builtin.authorized_key:
+- name: Add SSH key if provided
+  ansible.posix.authorized_key:
     user: "{{ item.name }}"
-    key: "{{ item.ssh_key }}"
+    key: "{{ item.ssh_pubkey }}"
     state: present
-  when: item.ssh_key is defined and (item.ssh_key | length) > 0
-  loop: "{{ common_new_users }}"
-  loop_control:
-    label: "{{ item.name }}"
-
-- name: Ensure .ssh directory exists for users
-  file:
-    path: "/home/{{ item.name }}/.ssh"
-    state: directory
-    owner: "{{ item.name }}"
-    group: "{{ item.name }}"
-    mode: "0750"
-  when: item.ssh_keygen | default(false)
+  when: item.ssh_pubkey | length > 0
   loop: "{{ common_new_users }}"
   loop_control:
     label: "{{ item.name }}"

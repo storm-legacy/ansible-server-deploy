@@ -69,6 +69,8 @@
   notify:
     - Restart Zabbix Agent 2
 
+# TODO: Add zabbix user to groups adm, docker and any that's needed
+
 - name: Enable Zabbix Agent 2
   ansible.builtin.systemd:
     name: "zabbix-agent2"

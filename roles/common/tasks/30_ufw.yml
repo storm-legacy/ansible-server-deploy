@@ -10,7 +10,7 @@
   notify:
     - Reload UFW rules
 
-- name: Allow SSH (:{{ common_ssh_port }}) connection from whitelisted IPs
+- name: Allow SSH connection from whitelisted IPs (:{{ common_ssh_port }})
   community.general.ufw:
     rule: allow
     port: "{{ common_ssh_port }}"

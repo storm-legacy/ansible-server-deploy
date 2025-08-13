@@ -1,0 +1,12 @@
+# Inspired by: https://github.com/limayne/ansible-disableservices/blob/main/main.yaml
+---
+- name: Disable unecessary services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop: "{{ common_services_disabled }}"
+  loop_control:
+    label: "{{ item }}"
+  notify:
+    - Reboot systemd
