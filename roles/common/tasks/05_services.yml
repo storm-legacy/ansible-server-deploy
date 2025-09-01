@@ -1,6 +1,6 @@
 # Inspired by: https://github.com/limayne/ansible-disableservices/blob/main/main.yaml
 ---
-- name: Disable unecessary services
+- name: Disable unnecessary services
   ansible.builtin.systemd_service:
     name: "{{ item }}"
     state: stopped

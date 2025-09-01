@@ -1,1 +1,0 @@
-maintenance_report_path: "{{ ansible_env.HOME }}/maintenance_report_{{ ansible_date_time.date }}"

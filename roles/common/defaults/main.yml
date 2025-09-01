@@ -35,9 +35,9 @@ common_services_disabled:
 
 common_sysctl_config:
   # disable IPv6
-  "net.ipv6.conf.all.disable_ipv6": "1"
-  "net.ipv6.conf.lo.disable_ipv6": "1"
-  "net.ipv6.conf.default.disable_ipv6": "1"
+  # "net.ipv6.conf.all.disable_ipv6": "1"
+  # "net.ipv6.conf.lo.disable_ipv6": "1"
+  # "net.ipv6.conf.default.disable_ipv6": "1"
 
 # SWAP
 common_swapfile_size: "{{ ((ansible_memtotal_mb | int / 2) if (ansible_memtotal_mb | int >= 2048) else '2048') }}"
@@ -56,3 +56,4 @@ common_whitelist_ips: "{{ vault_whitelist_ips }}"
 
 # Users
 common_new_users: "{{ vault_new_users }}"
+common_remove_users: "{{ vault_remove_users }}"

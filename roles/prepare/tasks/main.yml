@@ -17,6 +17,7 @@
   ansible.builtin.group:
     name: wheel
     state: present
+    system: true
 
 - name: Add 'wheel' group to sudoers
   ansible.builtin.lineinfile:

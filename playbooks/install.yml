@@ -1,38 +1,20 @@
 ---
-- name: Bootstrap Ansible environment
-  hosts: all
-  become: true
-  roles:
-    - prepare
-  vars:
-    ansible_python_interpreter: "/usr/bin/python3"
-
 - name: Configure the server
   hosts: all
   become: true
   roles:
     - common
-    # - docker
+    - docker
     # - zabbix_agent
   vars:
-    ansible_python_interpreter: "/root/.venv_ansible/bin/python3"
-
-# FIXME: Use new user and port
-- name: Reboot the server
-  hosts: all
-  become: true
-  vars:
+    ansible_user: "ansible"
+    ansible_port: "{{ vault_ssh_port }}"
     ansible_python_interpreter: "/root/.venv_ansible/bin/python3"
   tasks:
-    - name: Update connection
-      ansible.builtin.set_fact:
-        ansible_user: "ansible"
-        ansible_port: "{{ vault_ssh_port }}"
-
-    - name: Reconnect with new settings
+    - name: Reset connection
       ansible.builtin.meta: reset_connection
 
-    - name: Reboot
+    - name: Reboot the system
       ansible.builtin.reboot:
         reboot_timeout: 600
         pre_reboot_delay: 0

@@ -2,13 +2,13 @@
   ansible.builtin.apt_key:
     url: "{{ docker_ubuntu_gpg_url }}"
     state: present
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_distribution in ['Debian', 'Ubuntu']
 
 - name: Add Docker APT repository
   ansible.builtin.apt_repository:
     repo: "{{ docker_ubuntu_repo_url }}"
     state: present
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_distribution in ['Debian', 'Ubuntu']
 
 - name: Install Docker
   ansible.builtin.apt:
@@ -22,7 +22,7 @@
       - docker-buildx-plugin
       - docker-compose-plugin
     state: present
-  when: ansible_distribution in ['Ubuntu']
+  when: ansible_distribution in ['Debian', 'Ubuntu']
 
 - name: Copy Docker configuration
   ansible.builtin.copy:
@@ -35,34 +35,34 @@
   notify:
     - Restart Docker service
 
-# TODO: Fix adding users to docker group
 - name: Add users to docker group
   ansible.builtin.user:
-    name: "{{ item.key }}"
+    name: "{{ item }}"
     append: true
     groups: "docker"
     state: present
-  loop: "{{ vault_admin_users }}"
-  when: (vault_admin_users is defined) and  (vault_admin_users | length > 0)
+  loop: "{{ docker_users }}"
+  loop_control:
+    label: "{{ item }}"
 
 - name: Check if UFW is installed
   check_mode: true
   ansible.builtin.package:
     name: "ufw"
     state: "present"
-  register: ufw_check
+  register: docker_ufw_check
 
 - name: Check if UFW is enabled
   check_mode: true
   community.general.ufw:
     state: "enabled"
-  register: ufw_enabled_check
+  register: docker_ufw_enabled_check
 
 - name: Append ufw-docker rules to /etc/ufw/after.rules
   ansible.builtin.blockinfile:
     path: "/etc/ufw/after.rules"
-    block: "{{ lookup('file', '{{ role_path }}/templates/ufw-docker.rules.j2') }}"
+    block: "{{ lookup('file', '{{ role_path }}/files/ufw-docker.rules') }}"
     insertbefore: EOF
-  when: not ufw_check.changed
+  when: not docker_ufw_check.changed
   notify:
     - Restart UFW service

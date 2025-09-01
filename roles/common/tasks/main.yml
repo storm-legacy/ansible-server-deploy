@@ -14,8 +14,9 @@
 - name: Include SSH configuration task
   ansible.builtin.include_tasks: 20_ssh.yml
 
-- name: Include knockd configuration taks
+- name: Include knockd configuration tasks
   ansible.builtin.include_tasks: 25_knockd.yml
 
-- name: Include UFW configuration taks
+- name: Include UFW configuration tasks
   ansible.builtin.include_tasks: 30_ufw.yml
+  when: ansible_distribution in ['Debian', 'Ubuntu']

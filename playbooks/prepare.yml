@@ -1,0 +1,27 @@
+---
+- name: Bootstrap Ansible
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    new_port: "{{ vault_ssh_port }}"
+  roles:
+    - prepare
+  tasks:
+    - name: Set SSH port in sshd_config
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?Port\s+'
+        line: "Port {{ new_port }}"
+        state: present
+        backup: true
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Restart SSH service
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+        enabled: true

@@ -21,13 +21,40 @@
     line: "127.0.0.1 {{ ansible_hostname }}"
     state: present
 
-- name: Adjust sysctl.conf
-  ansible.posix.sysctl:
-    name: "{{ item.key }}"
-    value: "{{ item.value }}"
-    state: "present"
-    reload: true
-  with_dict: "{{ common_sysctl_config }}"
+# - name: Adjust sysctl.conf
+#   ansible.posix.sysctl:
+#     name: "{{ item.key }}"
+#     value: "{{ item.value }}"
+#     state: "present"
+#     reload: true
+#   with_dict: "{{ common_sysctl_config }}"
+
+- name: Ensure GRUB_CMDLINE_LINUX contains ipv6.disable=1
+  ansible.builtin.replace:
+    path: /etc/default/grub
+    regexp: '^(GRUB_CMDLINE_LINUX=")(?:(?!.*\bipv6\.disable=1\b).*)"$'
+    replace: '\1\g<0>"'
+  check_mode: false
+  register: common_grub_placeholder
+  when: ansible_distribution in ['Debian', 'Ubuntu']
+
+- name: Append ipv6.disable=1 to GRUB_CMDLINE_LINUX
+  ansible.builtin.replace:
+    path: /etc/default/grub
+    regexp: '^(GRUB_CMDLINE_LINUX=")(.*)"$'
+    replace: '\1\2 ipv6.disable=1"'
+    backup: true
+  register: common_grub_changed
+  when:
+    - ansible_distribution in ['Debian', 'Ubuntu']
+    - common_grub_placeholder is changed
+
+- name: Run update-grub if changed
+  ansible.builtin.command: update-grub
+  when:
+    - ansible_distribution in ['Debian', 'Ubuntu']
+    - common_grub_changed is changed
+  changed_when: false
 
 - name: Disable root password
   ansible.builtin.user:

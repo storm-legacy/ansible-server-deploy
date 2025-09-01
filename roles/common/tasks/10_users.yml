@@ -43,3 +43,12 @@
   loop: "{{ common_new_users }}"
   loop_control:
     label: "{{ item.name }}"
+
+- name: Remove specified users
+  ansible.builtin.user:
+    name: "{{ item }}"
+    remove: true
+    state: absent
+  loop: "{{ common_remove_users }}"
+  loop_control:
+    label: "{{ item }}"
