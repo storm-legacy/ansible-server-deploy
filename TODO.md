@@ -4,7 +4,7 @@
 - [X] Disable IPv6 by default (ubuntu ignores sysctl parameters)
 
 ## Ideas:
-- [ ] Add user remove list (by username)
+- [X] Add user remove list (by username)
 - [ ] Configure automatic audits
 - [ ] Configure automatic virus scan
 - [ ] Configure information sending about found problems (zabbix/other medium)

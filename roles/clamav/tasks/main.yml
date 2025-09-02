@@ -1,0 +1,81 @@
+- name: Install ClamAV
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: "present"
+  loop:
+    - clamav
+    - clamav-daemon
+
+- name: Temporary disable freshclam service
+  ansible.builtin.systemd_service:
+    name: "clamav-freshclam"
+    state: stopped
+
+- name: Temporary disable clamav-daemon service
+  ansible.builtin.systemd_service:
+    name: "clamav-daemon"
+    state: stopped
+
+- name: Adjust checks per day
+  ansible.builtin.lineinfile:
+    path: /etc/clamav/freshclam.conf
+    regexp: '^\s*Checks\s+\d+'
+    line: "Checks 4"
+    create: false
+    backup: true
+  when: ansible_distribution in ['Debian', 'Ubuntu']
+
+- name: Adjust clamd.conf MaxRecursion
+  ansible.builtin.lineinfile:
+    path: /etc/clamav/clamd.conf
+    regexp: '^\s*MaxRecursion\s+\d+'
+    line: "MaxRecursion 48"
+    create: false
+    backup: true
+  when: ansible_distribution in ['Debian', 'Ubuntu']
+
+- name: Add clamd exclusions in /etc/clamav/clamd.conf
+  ansible.builtin.blockinfile:
+    path: /etc/clamav/clamd.conf
+    insertafter: EOF
+    create: false
+    block: |
+      ExcludePath ^/dev/
+      ExcludePath ^/proc/
+      ExcludePath ^/sys/
+      ExcludePath ^/run/
+  when: ansible_distribution in ['Debian', 'Ubuntu']
+
+- name: Update ClamAV database
+  ansible.builtin.command:
+    cmd: freshclam
+    creates: /var/lib/clamav/main.cvd
+
+- name: Enable clamav-freshclam service
+  ansible.builtin.systemd_service:
+    name: "clamav-freshclam"
+    enabled: true
+    state: started
+
+- name: Enable clamav-daemon service
+  ansible.builtin.systemd_service:
+    name: "clamav-daemon"
+    enabled: true
+    state: started
+  when: ansible_distribution in ['Debian', 'Ubuntu']
+
+- name: Copy backup script to the target
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/usr/local/bin/clamscan_daily.sh"
+    dest: "/usr/local/bin/clamscan_daily.sh"
+    mode: '0750'
+    owner: root
+    group: root
+
+- name: Install crontab task to the target
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/etc/cron.d/clamav_daily"
+    dest: "/etc/cron.d/clamav_daily"
+    mode: '0640'
+    owner: root
+    group: root

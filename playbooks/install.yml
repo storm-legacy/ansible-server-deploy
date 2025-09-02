@@ -5,6 +5,7 @@
   roles:
     - common
     - docker
+    - clamav
     # - zabbix_agent
   vars:
     ansible_user: "ansible"
