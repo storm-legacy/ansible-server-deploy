@@ -1,6 +1,6 @@
 [project]
 name = "ansible-server-deploy"
-version = "0.5.0"
+version = "0.5.1"
 description = "deployment package for the servers"
 package-mode = false
 

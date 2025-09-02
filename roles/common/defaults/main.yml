@@ -13,8 +13,6 @@ common_packages_base:
   - "vim"
   - "unzip"
   - "make"
-  # - "fail2ban"
-  # - "lynis"
 
 common_packages_ubuntu:
   - "unattended-upgrades"
@@ -32,6 +30,9 @@ common_services_disabled:
   - rpcbind
   - avahi-daemon
   - avahi-dnsconfd
+
+common_services_enabled:
+  - cron
 
 common_sysctl_config:
   # disable IPv6
