@@ -1,19 +1,12 @@
 - name: Install ClamAV
   ansible.builtin.package:
-    name: "{{ item }}"
+    name: "clamav"
     state: "present"
-  loop:
-    - clamav
-    - clamav-daemon
 
 - name: Temporary disable freshclam service
   ansible.builtin.systemd_service:
     name: "clamav-freshclam"
-    state: stopped
-
-- name: Temporary disable clamav-daemon service
-  ansible.builtin.systemd_service:
-    name: "clamav-daemon"
+    enabled: false
     state: stopped
 
 - name: Adjust checks per day
@@ -25,26 +18,26 @@
     backup: true
   when: ansible_distribution in ['Debian', 'Ubuntu']
 
-- name: Adjust clamd.conf MaxRecursion
-  ansible.builtin.lineinfile:
-    path: /etc/clamav/clamd.conf
-    regexp: '^\s*MaxRecursion\s+\d+'
-    line: "MaxRecursion 48"
-    create: false
-    backup: true
-  when: ansible_distribution in ['Debian', 'Ubuntu']
+# - name: Adjust clamd.conf MaxRecursion
+#   ansible.builtin.lineinfile:
+#     path: /etc/clamav/clamd.conf
+#     regexp: '^\s*MaxRecursion\s+\d+'
+#     line: "MaxRecursion 48"
+#     create: false
+#     backup: true
+#   when: ansible_distribution in ['Debian', 'Ubuntu']
 
-- name: Add clamd exclusions in /etc/clamav/clamd.conf
-  ansible.builtin.blockinfile:
-    path: /etc/clamav/clamd.conf
-    insertafter: EOF
-    create: false
-    block: |
-      ExcludePath ^/dev/
-      ExcludePath ^/proc/
-      ExcludePath ^/sys/
-      ExcludePath ^/run/
-  when: ansible_distribution in ['Debian', 'Ubuntu']
+# - name: Add clamd exclusions in /etc/clamav/clamd.conf
+#   ansible.builtin.blockinfile:
+#     path: /etc/clamav/clamd.conf
+#     insertafter: EOF
+#     create: false
+#     block: |
+#       ExcludePath ^/dev/
+#       ExcludePath ^/proc/
+#       ExcludePath ^/sys/
+#       ExcludePath ^/run/
+#   when: ansible_distribution in ['Debian', 'Ubuntu']
 
 - name: Update ClamAV database
   ansible.builtin.command:
@@ -56,13 +49,6 @@
     name: "clamav-freshclam"
     enabled: true
     state: started
-
-- name: Enable clamav-daemon service
-  ansible.builtin.systemd_service:
-    name: "clamav-daemon"
-    enabled: true
-    state: started
-  when: ansible_distribution in ['Debian', 'Ubuntu']
 
 - name: Copy backup script to the target
   ansible.builtin.copy:
