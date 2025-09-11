@@ -15,24 +15,26 @@ common_packages_base:
   - "make"
 
 common_packages_ubuntu:
+  - "qemu-guest-agent"
   - "unattended-upgrades"
   - "htop"
 
 common_services_disabled:
-  - bluetooth
-  - modemmanager
-  - cups
-  - cups-browsed
-  - apport
-  - whoopsie
-  - lxd
-  - lxcfs
-  - rpcbind
-  - avahi-daemon
-  - avahi-dnsconfd
+  - "bluetooth"
+  - "modemmanager"
+  - "cups"
+  - "cups-browsed"
+  - "apport"
+  - "whoopsie"
+  - "lxd"
+  - "lxcfs"
+  - "rpcbind"
+  - "avahi-daemon"
+  - "avahi-dnsconfd"
 
 common_services_enabled:
-  - cron
+  - "qemu-guest-agent"
+  - "cron"
 
 common_sysctl_config:
   # disable IPv6
@@ -53,6 +55,7 @@ common_timezone: "Europe/Warsaw"
 # SSH
 common_ssh_port: "{{ vault_ssh_port }}"
 common_ssh_knock_seq: "{{ vault_ssh_knock_seq | map('string') | join(',') }}"
+common_ssh_disable_password_login: "{{ vault_ssh_disable_password_login | default(true) }}"
 common_whitelist_ips: "{{ vault_whitelist_ips }}"
 
 # Users

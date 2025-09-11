@@ -53,7 +53,7 @@ ControlSocket=/run/zabbix/agent.sock
 # TLSKeyFile=
 
 ## PSK
-TLSPSKIdentity=PSK{{ item.psk_name }}
+TLSPSKIdentity={{ item.psk_name }}
 TLSPSKFile=/etc/zabbix/zabbix_agent_psk.key
 
 ## Plugins

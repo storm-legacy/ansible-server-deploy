@@ -15,4 +15,4 @@ GSSAPIAuthentication no
 PermitRootLogin no
 PermitEmptyPasswords no
 PubkeyAuthentication yes
-PasswordAuthentication no
+PasswordAuthentication {{ 'no' if common_ssh_disable_password_login else 'yes' }}

@@ -6,7 +6,8 @@ zabbix_agent_ubuntu_repo_url:
   "https://repo.zabbix.com/zabbix/{{ zabbix_agent_version }}/ubuntu/pool/main/z/zabbix-release/\
   zabbix-release_latest+ubuntu{{  zabbix_agent_ubuntu_version }}_all.deb"
 
-zabbix_agent_hostname: "{{ ansible_hostname | lower }}-{{ lookup('community.general.random_string', upper=true, lower=false, special=false, length=4) }}"
+zabbix_agent_hostname: "{{ ansible_hostname }}_{{ lookup('community.general.random_string', upper=true, lower=false, special=false, length=4) }}"
 
-zabbix_agent_psk_key_name: "{{ lookup('community.general.random_string', upper=true, lower=false, special=false, length=8) }}"
-zabbix_agent_psk_key: "{{ lookup('community.general.random_string', upper=false, lower=false, numbers=false, override_special='0123456789abcdef', length=128) }}"
+zabbix_agent_psk_key_name: "PSK{{ lookup('community.general.random_string', upper=true, lower=false, special=false, length=8) }}"
+zabbix_agent_psk_key: |
+  {{ lookup('community.general.random_string', upper=false, lower=false, numbers=false, override_special='0123456789abcdef', length=128) }}

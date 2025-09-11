@@ -17,15 +17,23 @@ vault_new_users:
     groups: "wheel"
     ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFb8QX2cK7l1RypxR2qg4oVt2eU6yF3Vg9TzJkP5LJn example@host"
 
+vault_remove_users:
+  - "ubuntu"
+
+vault_docker_users:
+  - "user1"
+  - "user2"
+
 # General whitelist IPs
 vault_whitelist_ips:
   - "127.0.0.1"
   - "10.0.0.1"
 
 # New SSH port for the server
-vault_ssh_port: 7522
+vault_ssh_port: 2222
 vault_ssh_knock_seq: [12345, 12346, 12347, 12348, 12349]
+vault_ssh_disable_password_login: true
 
-# TODO: Zabbix configuration
-vault_zabbix_agent_server_ip: "123.123.123.123"
-vault_zabbix_agent_version: "6.0"
+# Zabbix
+vault_zabbix_agent_version: 7.0
+vault_zabbix_agent_server_ip: "10.123.123.123"
